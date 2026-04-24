@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Applet: llenado dinámico de recipientes</title>
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --ink:#1f2937;
+      --muted:#64748b;
+      --line:#dbe3ee;
+      --accent:#1d4ed8;
+      --accent2:#0ea5e9;
+      --water:rgba(14,165,233,.24);
+      --waterline:#06b6d4;
+      --axis:#374151;
+      --good:#0f766e;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:var(--bg);
+      color:var(--ink);
+    }
+    .wrap{
+      max-width:1380px;
+      margin:0 auto;
+      padding:20px;
+    }
+    h1{
+      margin:0 0 8px 0;
+      font-size:30px;
+    }
+    .lead{
+      color:var(--muted);
+      margin-bottom:18px;
+      line-height:1.5;
+    }
+    .topbar{
+      display:grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap:16px;
+      margin-bottom:16px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px 18px;
+      box-shadow:0 8px 20px rgba(15,23,42,.05);
+    }
+    .controls{
+      display:grid;
+      grid-template-columns:auto 1fr auto auto auto;
+      gap:12px;
+      align-items:center;
+    }
+    .controls-bottom{
+      margin-top:16px;
+      padding-top:14px;
+      border-top:1px solid var(--line);
+    }
+    .controls label{font-weight:700}
+    input[type="range"]{width:100%}
+    button{
+      border:none;
+      border-radius:12px;
+      padding:10px 14px;
+      cursor:pointer;
+      font-weight:700;
+      background:var(--accent);
+      color:white;
+    }
+    button.secondary{background:#475569}
+    button.light{background:#e2e8f0;color:#0f172a}
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+    }
+    .subgrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+    }
+    h2{
+      margin:0 0 10px 0;
+      font-size:20px;
+    }
+    h3{
+      margin:0 0 8px 0;
+      font-size:17px;
+    }
+    .mini{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.45;
+    }
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-top:12px;
+    }
+    .stat{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      background:#fbfdff;
+    }
+    .stat b{
+      display:block;
+      margin-bottom:4px;
+      color:var(--muted);
+      font-size:13px;
+      font-weight:700;
+    }
+    .stat span{
+      font-size:22px;
+      font-weight:700;
+    }
+    .formula{
+      margin-top:12px;
+      padding:12px;
+      background:#f8fafc;
+      border:1px solid var(--line);
+      border-radius:14px;
+      line-height:1.6;
+      font-family:"Segoe UI", Arial, sans-serif;
+    }
+    svg{width:100%; height:auto; display:block}
+    .caption{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:8px;
+      line-height:1.45;
+    }
+    .foot{
+      margin-top:16px;
+      font-size:14px;
+      color:var(--muted);
+      line-height:1.6;
+    }
+    .badge{
+      display:inline-block;
+      padding:4px 9px;
+      border-radius:999px;
+      background:#e0f2fe;
+      color:#075985;
+      font-size:12px;
+      font-weight:700;
+      margin-bottom:8px;
+    }
+    @media (max-width:1100px){
+      .topbar,.grid,.subgrid{grid-template-columns:1fr}
+      .controls{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="badge">Applet interactivo</div>
+    <h1>Llenado dinámico: tiempo y altura del líquido</h1>
+    <div class="lead">
+      Este applet compara dos recipientes con la misma altura y la misma capacidad: un cilindro y un cono recto con vértice superior. El caudal es constante en ambos casos. Por ello, el tiempo total de llenado es el mismo, pero la relación entre tiempo y altura del líquido cambia según la forma del recipiente.
+    </div>
+
+    <div class="topbar">
+      <div class="card">
+        <h3>Datos en tiempo real</h3>
+        <div class="mini">Los valores numéricos se actualizan conforme avanza la animación o al mover manualmente el control de tiempo.</div>
+        <div class="stats">
+          <div class="stat"><b>Tiempo total</b><span id="Tstat">4.00 s</span></div>
+          <div class="stat"><b>Altura cilíndrica</b><span id="hcylStat">0.00 cm</span></div>
+          <div class="stat"><b>Altura cónica</b><span id="hconeStat">0.00 cm</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Modelo matemático</h3>
+        <div class="mini">Se toma una altura total de 6 cm. El cono se ajusta para que tenga la misma capacidad que el cilindro.</div>
+        <div class="formula">
+          <div><b>Cilindro:</b> h(t) = H · t / T</div>
+          <div><b>Cono:</b> h(t) = H · [1 − (1 − t / T)<sup>1/3</sup>]</div>
+          <div style="margin-top:8px;"><b>En este applet:</b> H = 6 cm y T = 4 s</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Recipientes</h2>
+        <div class="subgrid">
+          <div>
+            <h3>Cilindro</h3>
+            <svg id="cylSvg" viewBox="0 0 280 360" aria-label="Cilindro dinámico"></svg>
+          </div>
+          <div>
+            <h3>Cono</h3>
+            <svg id="coneSvg" viewBox="0 0 280 360" aria-label="Cono dinámico"></svg>
+          </div>
+        </div>
+        <div class="caption">La línea de agua y la región sombreada cambian al mover el tiempo. En el cilindro la altura crece linealmente; en el cono, la altura crece lentamente al inicio y muy rápido cerca del final.</div>
+      </div>
+
+      <div class="card">
+        <h2>Planos cartesianos dinámicos</h2>
+        <div class="subgrid">
+          <div>
+            <h3>Cilindro: altura vs. tiempo</h3>
+            <svg id="graphCyl" viewBox="0 0 520 360" aria-label="Gráfica cilindro"></svg>
+          </div>
+          <div>
+            <h3>Cono: altura vs. tiempo</h3>
+            <svg id="graphCone" viewBox="0 0 520 360" aria-label="Gráfica cono"></svg>
+          </div>
+        </div>
+        <div class="caption">En cada plano cartesiano la gráfica inicia vacía y se va construyendo conforme avanza el tiempo; el punto móvil representa el estado instantáneo del llenado.</div>
+        <div class="controls controls-bottom">
+          <label for="timeSlider">Tiempo</label>
+          <input id="timeSlider" type="range" min="0" max="4" value="0" step="0.01" />
+          <span id="timeLabel"><b>0.00</b> s</span>
+          <button id="playBtn">▶ Reproducir</button>
+          <button id="resetBtn" class="light">↺ Reiniciar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card foot">
+      <b>Lectura didáctica.</b> Como el volumen aumenta a ritmo constante, la altura del líquido depende del área de la sección transversal en cada nivel. En el cilindro esa área permanece constante, por eso la gráfica es una recta. En el cono el área superior disponible se va reduciendo a medida que el agua sube; por ello la altura aumenta cada vez más rápido y la curva resulta no lineal.
+    </div>
+  </div>
+
+  <script>
+    const H = 6;      // cm
+    const T = 4;      // s
+
+    const slider = document.getElementById('timeSlider');
+    const timeLabel = document.getElementById('timeLabel');
+    const playBtn = document.getElementById('playBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const hcylStat = document.getElementById('hcylStat');
+    const hconeStat = document.getElementById('hconeStat');
+
+    const cylSvg = document.getElementById('cylSvg');
+    const coneSvg = document.getElementById('coneSvg');
+    const graphCyl = document.getElementById('graphCyl');
+    const graphCone = document.getElementById('graphCone');
+
+    let playing = false;
+    let startTime = null;
+    let startValue = 0;
+
+    function hCyl(t){ return H * (t / T); }
+    function hCone(t){ return H * (1 - Math.pow(Math.max(0, 1 - t / T), 1/3)); }
+
+    function el(name, attrs={}){
+      const node = document.createElementNS('http://www.w3.org/2000/svg', name);
+      Object.entries(attrs).forEach(([k,v]) => node.setAttribute(k, v));
+      return node;
+    }
+
+    function clearSvg(svg){ while(svg.firstChild) svg.removeChild(svg.firstChild); }
+
+    function drawCylinder(level){
+      clearSvg(cylSvg);
+      const x=140, top=35, bottom=315, rx=78, ry=18;
+      const Hpx = bottom-top;
+      const yWater = bottom - (level/H)*Hpx;
+
+      cylSvg.appendChild(el('rect', {x:x-rx, y:top, width:2*rx, height:Hpx, fill:'#f8fafc', stroke:'none'}));
+
+      // water body
+      cylSvg.appendChild(el('rect', {x:x-rx, y:yWater, width:2*rx, height:bottom-yWater, fill:'var(--water)', stroke:'none'}));
+      cylSvg.appendChild(el('ellipse', {cx:x, cy:yWater, rx:rx, ry:ry, fill:'rgba(14,165,233,.18)', stroke:'var(--waterline)', 'stroke-width':2}));
+      cylSvg.appendChild(el('ellipse', {cx:x, cy:bottom, rx:rx, ry:ry, fill:'rgba(14,165,233,.18)', stroke:'var(--waterline)', 'stroke-width':2, 'stroke-dasharray':'6 6'}));
+
+      cylSvg.appendChild(el('line', {x1:x-rx, y1:top, x2:x-rx, y2:bottom, stroke:'#94a3b8', 'stroke-width':2}));
+      cylSvg.appendChild(el('line', {x1:x+rx, y1:top, x2:x+rx, y2:bottom, stroke:'#94a3b8', 'stroke-width':2}));
+      cylSvg.appendChild(el('ellipse', {cx:x, cy:top, rx:rx, ry:ry, fill:'none', stroke:'var(--waterline)', 'stroke-width':2}));
+      cylSvg.appendChild(el('ellipse', {cx:x, cy:bottom, rx:rx, ry:ry, fill:'none', stroke:'var(--waterline)', 'stroke-width':2, 'stroke-dasharray':'6 6'}));
+      cylSvg.appendChild(el('line', {x1:x, y1:bottom, x2:x, y2:top+10, stroke:'#111827', 'stroke-dasharray':'8 8', 'stroke-width':1.5}));
+
+      const txt = el('text', {x:20, y:26, fill:'#0f172a', 'font-size':16, 'font-weight':'700'});
+      txt.textContent = `h = ${level.toFixed(2)} cm`;
+      cylSvg.appendChild(txt);
+    }
+
+    function drawCone(level){
+      clearSvg(coneSvg);
+      const apexX=140, apexY=35, baseY=315, baseRx=95, baseRy=18;
+      const Hpx = baseY-apexY;
+      const yWater = baseY - (level/H)*Hpx;
+      const frac = (level/H);
+      const rxWater = baseRx*(1-frac);
+
+      // outer cone
+      cyl = el('path', {d:`M ${apexX} ${apexY} L ${apexX-baseRx} ${baseY} L ${apexX+baseRx} ${baseY} Z`, fill:'#f8fafc', stroke:'none'});
+      coneSvg.appendChild(cyl);
+
+      // clipped water polygon
+      if(level > 0.001){
+        const leftWaterX = apexX - rxWater;
+        const rightWaterX = apexX + rxWater;
+        const poly = el('polygon', {
+          points:`${apexX-baseRx},${baseY} ${apexX+baseRx},${baseY} ${rightWaterX},${yWater} ${leftWaterX},${yWater}`,
+          fill:'rgba(14,165,233,.24)', stroke:'none'
+        });
+        coneSvg.appendChild(poly);
+        coneSvg.appendChild(el('ellipse', {cx:apexX, cy:yWater, rx:rxWater, ry:Math.max(5, 18*(1-frac*0.35)), fill:'rgba(14,165,233,.18)', stroke:'#f59e0b', 'stroke-width':2}));
+      }
+
+      coneSvg.appendChild(el('line', {x1:apexX, y1:baseY, x2:apexX, y2:apexY+6, stroke:'#111827', 'stroke-dasharray':'8 8', 'stroke-width':1.5}));
+      coneSvg.appendChild(el('line', {x1:apexX, y1:apexY, x2:apexX-baseRx, y2:baseY, stroke:'#94a3b8', 'stroke-width':2}));
+      coneSvg.appendChild(el('line', {x1:apexX, y1:apexY, x2:apexX+baseRx, y2:baseY, stroke:'#94a3b8', 'stroke-width':2}));
+      coneSvg.appendChild(el('ellipse', {cx:apexX, cy:baseY, rx:baseRx, ry:baseRy, fill:'none', stroke:'var(--waterline)', 'stroke-width':2, 'stroke-dasharray':'6 6'}));
+
+      const txt = el('text', {x:20, y:26, fill:'#0f172a', 'font-size':16, 'font-weight':'700'});
+      txt.textContent = `h = ${level.toFixed(2)} cm`;
+      coneSvg.appendChild(txt);
+    }
+
+    function drawGraph(svg, fn, titleColor){
+      clearSvg(svg);
+      const W=520, Hsvg=360;
+      const m={l:56,r:18,t:18,b:44};
+      const pw=W-m.l-m.r, ph=Hsvg-m.t-m.b;
+      const xMap = t => m.l + pw*(t/T);
+      const yMap = y => Hsvg-m.b - ph*(y/H);
+
+      // frame
+      svg.appendChild(el('rect', {x:0, y:0, width:W, height:Hsvg, fill:'#ffffff'}));
+
+      // grid
+      for(let i=0;i<=4;i++){
+        const x=xMap(i);
+        svg.appendChild(el('line', {x1:x, y1:m.t, x2:x, y2:Hsvg-m.b, stroke:'#e5e7eb', 'stroke-width':1}));
+      }
+      for(let j=0;j<=6;j++){
+        const y=yMap(j);
+        svg.appendChild(el('line', {x1:m.l, y1:y, x2:W-m.r, y2:y, stroke:'#e5e7eb', 'stroke-width':1}));
+      }
+
+      // axes
+      svg.appendChild(el('line', {x1:m.l, y1:Hsvg-m.b, x2:W-m.r+4, y2:Hsvg-m.b, stroke:'#374151', 'stroke-width':2}));
+      svg.appendChild(el('line', {x1:m.l, y1:Hsvg-m.b, x2:m.l, y2:m.t-4, stroke:'#374151', 'stroke-width':2}));
+
+      // arrowheads
+      svg.appendChild(el('path', {d:`M ${W-m.r+4} ${Hsvg-m.b} l -9 -4 l 0 8 z`, fill:'#374151'}));
+      svg.appendChild(el('path', {d:`M ${m.l} ${m.t-4} l -4 9 l 8 0 z`, fill:'#374151'}));
+
+      // labels
+      const xlab = el('text', {x:W/2, y:Hsvg-10, fill:'#0f172a', 'font-size':14, 'text-anchor':'middle'});
+      xlab.textContent = 'tiempo (s)';
+      svg.appendChild(xlab);
+      const ylab = el('text', {x:18, y:Hsvg/2, fill:'#0f172a', 'font-size':14, transform:`rotate(-90 18 ${Hsvg/2})`, 'text-anchor':'middle'});
+      ylab.textContent = 'altura (cm)';
+      svg.appendChild(ylab);
+
+      for(let i=0;i<=4;i++){
+        const x=xMap(i);
+        const tx = el('text', {x:x, y:Hsvg-m.b+22, fill:'#475569', 'font-size':13, 'text-anchor':'middle'});
+        tx.textContent = i.toString();
+        svg.appendChild(tx);
+      }
+      for(let j=0;j<=6;j++){
+        const y=yMap(j);
+        const ty = el('text', {x:m.l-12, y:y+4, fill:'#475569', 'font-size':13, 'text-anchor':'end'});
+        ty.textContent = j.toString();
+        svg.appendChild(ty);
+      }
+
+      // curve built dynamically up to the current time
+      const t = parseFloat(slider.value);
+      if(t > 0){
+        let d='';
+        const n=Math.max(2, Math.ceil(220*(t/T)));
+        for(let i=0;i<=n;i++){
+          const ti=t*i/n;
+          const y=fn(ti);
+          d += (i===0 ? 'M ' : ' L ') + xMap(ti) + ' ' + yMap(y);
+        }
+        svg.appendChild(el('path', {d, fill:'none', stroke: titleColor, 'stroke-width':4, 'stroke-linecap':'round'}));
+
+        // dynamic guides and point
+        const y = fn(t);
+        svg.appendChild(el('line', {x1:xMap(t), y1:yMap(0), x2:xMap(t), y2:yMap(y), stroke:'#94a3b8', 'stroke-dasharray':'6 5', 'stroke-width':1.5}));
+        svg.appendChild(el('line', {x1:xMap(0), y1:yMap(y), x2:xMap(t), y2:yMap(y), stroke:'#94a3b8', 'stroke-dasharray':'6 5', 'stroke-width':1.5}));
+        svg.appendChild(el('circle', {cx:xMap(t), cy:yMap(y), r:6, fill:titleColor, stroke:'#ffffff', 'stroke-width':2}));
+      }
+    }
+
+    function update(){
+      const t = parseFloat(slider.value);
+      const hc = hCyl(t);
+      const hk = hCone(t);
+      timeLabel.innerHTML = `<b>${t.toFixed(2)}</b> s`;
+      hcylStat.textContent = `${hc.toFixed(2)} cm`;
+      hconeStat.textContent = `${hk.toFixed(2)} cm`;
+      drawCylinder(hc);
+      drawCone(hk);
+      drawGraph(graphCyl, hCyl, '#1d4ed8');
+      drawGraph(graphCone, hCone, '#2563eb');
+    }
+
+    function animate(ts){
+      if(!playing) return;
+      if(startTime === null){
+        startTime = ts;
+        startValue = parseFloat(slider.value);
+      }
+      const elapsed = (ts - startTime)/1000;
+      let value = startValue + elapsed;
+      if(value >= T){
+        value = T;
+        playing = false;
+        playBtn.textContent = '▶ Reproducir';
+      }
+      slider.value = value.toFixed(2);
+      update();
+      if(playing) requestAnimationFrame(animate);
+      else { startTime = null; }
+    }
+
+    slider.addEventListener('input', () => {
+      if(playing){
+        playing = false;
+        playBtn.textContent = '▶ Reproducir';
+        startTime = null;
+      }
+      update();
+    });
+
+    playBtn.addEventListener('click', () => {
+      playing = !playing;
+      playBtn.textContent = playing ? '⏸ Pausar' : '▶ Reproducir';
+      startTime = null;
+      if(playing) requestAnimationFrame(animate);
+    });
+
+    resetBtn.addEventListener('click', () => {
+      playing = false;
+      playBtn.textContent = '▶ Reproducir';
+      startTime = null;
+      slider.value = 0;
+      update();
+    });
+
+    update();
+  </script>
+</body>
+</html>
