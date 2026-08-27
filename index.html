@@ -1,454 +1,506 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Applet: llenado dinámico de recipientes</title>
-  <style>
-    :root{
-      --bg:#f6f8fb;
-      --card:#ffffff;
-      --ink:#1f2937;
-      --muted:#64748b;
-      --line:#dbe3ee;
-      --accent:#1d4ed8;
-      --accent2:#0ea5e9;
-      --water:rgba(14,165,233,.24);
-      --waterline:#06b6d4;
-      --axis:#374151;
-      --good:#0f766e;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Arial, Helvetica, sans-serif;
-      background:var(--bg);
-      color:var(--ink);
-    }
-    .wrap{
-      max-width:1380px;
-      margin:0 auto;
-      padding:20px;
-    }
-    h1{
-      margin:0 0 8px 0;
-      font-size:30px;
-    }
-    .lead{
-      color:var(--muted);
-      margin-bottom:18px;
-      line-height:1.5;
-    }
-    .topbar{
-      display:grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap:16px;
-      margin-bottom:16px;
-    }
-    .card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:16px 18px;
-      box-shadow:0 8px 20px rgba(15,23,42,.05);
-    }
-    .controls{
-      display:grid;
-      grid-template-columns:auto 1fr auto auto auto;
-      gap:12px;
-      align-items:center;
-    }
-    .controls-bottom{
-      margin-top:16px;
-      padding-top:14px;
-      border-top:1px solid var(--line);
-    }
-    .controls label{font-weight:700}
-    input[type="range"]{width:100%}
-    button{
-      border:none;
-      border-radius:12px;
-      padding:10px 14px;
-      cursor:pointer;
-      font-weight:700;
-      background:var(--accent);
-      color:white;
-    }
-    button.secondary{background:#475569}
-    button.light{background:#e2e8f0;color:#0f172a}
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:16px;
-    }
-    .subgrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:16px;
-    }
-    h2{
-      margin:0 0 10px 0;
-      font-size:20px;
-    }
-    h3{
-      margin:0 0 8px 0;
-      font-size:17px;
-    }
-    .mini{
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.45;
-    }
-    .stats{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:10px;
-      margin-top:12px;
-    }
-    .stat{
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px;
-      background:#fbfdff;
-    }
-    .stat b{
-      display:block;
-      margin-bottom:4px;
-      color:var(--muted);
-      font-size:13px;
-      font-weight:700;
-    }
-    .stat span{
-      font-size:22px;
-      font-weight:700;
-    }
-    .formula{
-      margin-top:12px;
-      padding:12px;
-      background:#f8fafc;
-      border:1px solid var(--line);
-      border-radius:14px;
-      line-height:1.6;
-      font-family:"Segoe UI", Arial, sans-serif;
-    }
-    svg{width:100%; height:auto; display:block}
-    .caption{
-      font-size:13px;
-      color:var(--muted);
-      margin-top:8px;
-      line-height:1.45;
-    }
-    .foot{
-      margin-top:16px;
-      font-size:14px;
-      color:var(--muted);
-      line-height:1.6;
-    }
-    .badge{
-      display:inline-block;
-      padding:4px 9px;
-      border-radius:999px;
-      background:#e0f2fe;
-      color:#075985;
-      font-size:12px;
-      font-weight:700;
-      margin-bottom:8px;
-    }
-    @media (max-width:1100px){
-      .topbar,.grid,.subgrid{grid-template-columns:1fr}
-      .controls{grid-template-columns:1fr}
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tarea 1 · Llenado de recipientes (versión de investigación)</title>
+<style>
+  :root{
+    --tinta:#1c2529; --tinta2:#5a686f; --linea:#c9d2d7; --fondo:#f7f9fa;
+    --agua:#2e86c1; --aguaB:#117864; --acento:#1a5276; --papel:#ffffff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fondo);color:var(--tinta);
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       font-size:15px;line-height:1.45}
+  header{background:var(--papel);border-bottom:1px solid var(--linea);padding:14px 18px}
+  header h1{margin:0;font-size:17px;font-weight:600;letter-spacing:.2px}
+  header p{margin:2px 0 0;font-size:13px;color:var(--tinta2)}
+  .id{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .id label{font-size:12px;color:var(--tinta2);display:flex;flex-direction:column;gap:3px}
+  .id input{border:1px solid var(--linea);border-radius:6px;padding:5px 8px;font-size:14px;width:150px}
+  main{display:grid;grid-template-columns:minmax(300px,1fr) minmax(320px,1.15fr);gap:14px;padding:14px 18px}
+  @media (max-width:900px){main{grid-template-columns:1fr}}
+  .panel{background:var(--papel);border:1px solid var(--linea);border-radius:10px;padding:12px}
+  .panel h2{margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--tinta2);font-weight:600}
+  canvas{display:block;width:100%;height:auto}
+  .lecturas{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+  .lectura{flex:1 1 120px;border:1px solid var(--linea);border-radius:8px;padding:8px 10px;background:#fbfdfe}
+  .lectura span{display:block;font-size:11px;color:var(--tinta2);text-transform:uppercase;letter-spacing:.5px}
+  .lectura strong{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+  .controles{margin:0 18px 14px;background:var(--papel);border:1px solid var(--linea);border-radius:10px;padding:12px}
+  .fila{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .fila:last-child{margin-bottom:0}
+  .fila b{font-size:12px;color:var(--tinta2);text-transform:uppercase;letter-spacing:.5px;min-width:74px}
+  input[type=range]{flex:1 1 240px;accent-color:var(--acento)}
+  button{border:1px solid var(--linea);background:var(--papel);border-radius:8px;padding:8px 12px;
+         font-size:14px;cursor:pointer;color:var(--tinta)}
+  button:hover{background:#eef4f7}
+  button.principal{background:var(--acento);border-color:var(--acento);color:#fff;font-weight:600}
+  button.principal:hover{background:#154360}
+  button[aria-pressed=true]{background:#e3eef5;border-color:#9dbdd2}
+  select{border:1px solid var(--linea);border-radius:8px;padding:7px 10px;font-size:14px;background:var(--papel)}
+  .datos{margin:0 18px 24px;background:var(--papel);border:1px solid var(--linea);border-radius:10px;padding:12px}
+  table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+  th,td{border:1px solid var(--linea);padding:6px 8px;text-align:center}
+  th{background:#eef2f5;font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--tinta2)}
+  td.vacio{color:var(--tinta2)}
+  .pie{font-size:12px;color:var(--tinta2);margin:0 18px 26px}
+  .aviso{font-size:12px;color:var(--tinta2);margin-top:8px}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="badge">Applet interactivo</div>
-    <h1>Llenado dinámico: tiempo y altura del líquido</h1>
-    <div class="lead">
-      Este applet compara dos recipientes con la misma altura y la misma capacidad: un cilindro y un cono recto con vértice superior. El caudal es constante en ambos casos. Por ello, el tiempo total de llenado es el mismo, pero la relación entre tiempo y altura del líquido cambia según la forma del recipiente.
-    </div>
-
-    <div class="topbar">
-      <div class="card">
-        <h3>Datos en tiempo real</h3>
-        <div class="mini">Los valores numéricos se actualizan conforme avanza la animación o al mover manualmente el control de tiempo.</div>
-        <div class="stats">
-          <div class="stat"><b>Tiempo total</b><span id="Tstat">4.00 s</span></div>
-          <div class="stat"><b>Altura cilíndrica</b><span id="hcylStat">0.00 cm</span></div>
-          <div class="stat"><b>Altura cónica</b><span id="hconeStat">0.00 cm</span></div>
-        </div>
-      </div>
-      <div class="card">
-        <h3>Modelo matemático</h3>
-        <div class="mini">Se toma una altura total de 6 cm. El cono se ajusta para que tenga la misma capacidad que el cilindro.</div>
-        <div class="formula">
-          <div><b>Cilindro:</b> h(t) = H · t / T</div>
-          <div><b>Cono:</b> h(t) = H · [1 − (1 − t / T)<sup>1/3</sup>]</div>
-          <div style="margin-top:8px;"><b>En este applet:</b> H = 6 cm y T = 4 s</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <h2>Recipientes</h2>
-        <div class="subgrid">
-          <div>
-            <h3>Cilindro</h3>
-            <svg id="cylSvg" viewBox="0 0 280 360" aria-label="Cilindro dinámico"></svg>
-          </div>
-          <div>
-            <h3>Cono</h3>
-            <svg id="coneSvg" viewBox="0 0 280 360" aria-label="Cono dinámico"></svg>
-          </div>
-        </div>
-        <div class="caption">La línea de agua y la región sombreada cambian al mover el tiempo. En el cilindro la altura crece linealmente; en el cono, la altura crece lentamente al inicio y muy rápido cerca del final.</div>
-      </div>
-
-      <div class="card">
-        <h2>Planos cartesianos dinámicos</h2>
-        <div class="subgrid">
-          <div>
-            <h3>Cilindro: altura vs. tiempo</h3>
-            <svg id="graphCyl" viewBox="0 0 520 360" aria-label="Gráfica cilindro"></svg>
-          </div>
-          <div>
-            <h3>Cono: altura vs. tiempo</h3>
-            <svg id="graphCone" viewBox="0 0 520 360" aria-label="Gráfica cono"></svg>
-          </div>
-        </div>
-        <div class="caption">En cada plano cartesiano la gráfica inicia vacía y se va construyendo conforme avanza el tiempo; el punto móvil representa el estado instantáneo del llenado.</div>
-        <div class="controls controls-bottom">
-          <label for="timeSlider">Tiempo</label>
-          <input id="timeSlider" type="range" min="0" max="4" value="0" step="0.01" />
-          <span id="timeLabel"><b>0.00</b> s</span>
-          <button id="playBtn">▶ Reproducir</button>
-          <button id="resetBtn" class="light">↺ Reiniciar</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="card foot">
-      <b>Lectura didáctica.</b> Como el volumen aumenta a ritmo constante, la altura del líquido depende del área de la sección transversal en cada nivel. En el cilindro esa área permanece constante, por eso la gráfica es una recta. En el cono el área superior disponible se va reduciendo a medida que el agua sube; por ello la altura aumenta cada vez más rápido y la curva resulta no lineal.
-    </div>
+<header>
+  <h1>Tarea 1 · Llenado de recipientes</h1>
+  <p>Versión de investigación. Registra las acciones realizadas con el recurso.</p>
+  <div class="id">
+    <label>Código de participante <input id="idPart" placeholder="p. ej. E-014"></label>
+    <label>Equipo n.º <input id="idEquipo" placeholder="p. ej. 07"></label>
   </div>
+</header>
 
-  <script>
-    const H = 6;      // cm
-    const T = 4;      // s
+<main>
+  <section class="panel">
+    <h2>Recipientes</h2>
+    <canvas id="escena" width="700" height="470"></canvas>
+    <div class="lecturas">
+      <div class="lectura"><span>Tiempo</span><strong id="lecT">0,0 s</strong></div>
+      <div class="lectura"><span id="rotA">Recipiente A</span><strong id="lecA">0,00 cm</strong></div>
+      <div class="lectura"><span id="rotB">Recipiente B</span><strong id="lecB">0,00 cm</strong></div>
+    </div>
+  </section>
 
-    const slider = document.getElementById('timeSlider');
-    const timeLabel = document.getElementById('timeLabel');
-    const playBtn = document.getElementById('playBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const hcylStat = document.getElementById('hcylStat');
-    const hconeStat = document.getElementById('hconeStat');
+  <section class="panel">
+    <h2>Gráficas</h2>
+    <canvas id="planos" width="700" height="470"></canvas>
+    <p class="aviso" id="avisoGraf">Las gráficas están ocultas. Se activan cuando el profesor lo indique.</p>
+  </section>
+</main>
 
-    const cylSvg = document.getElementById('cylSvg');
-    const coneSvg = document.getElementById('coneSvg');
-    const graphCyl = document.getElementById('graphCyl');
-    const graphCone = document.getElementById('graphCone');
+<section class="controles">
+  <div class="fila">
+    <b>Escenario</b>
+    <select id="escenario">
+      <option value="AB">Cilindro y cono (base ancha abajo)</option>
+      <option value="BC">Cono y cono invertido</option>
+      <option value="D">Recipiente desconocido (reto final)</option>
+    </select>
+    <button id="btnRecip" aria-pressed="true">Ocultar recipientes</button>
+    <button id="btnGraf" aria-pressed="false">Mostrar gráficas</button>
+    <button id="btnEjes" aria-pressed="false">Intercambiar ejes</button>
+  </div>
+  <div class="fila">
+    <b>Tiempo</b>
+    <button id="btnMenos">◀</button>
+    <input type="range" id="tiempo" min="0" max="60" step="10" value="0">
+    <button id="btnMas">▶</button>
+    <button id="btnPlay">Reproducir</button>
+    <button id="btnReset">Reiniciar</button>
+  </div>
+  <div class="fila">
+    <b>Paso</b>
+    <select id="paso">
+      <option value="10">cada 10 segundos</option>
+      <option value="5">cada 5 segundos</option>
+      <option value="2">cada 2 segundos</option>
+      <option value="1">cada 1 segundo</option>
+    </select>
+    <button class="principal" id="btnCapturar">Capturar lectura</button>
+    <button id="btnBorrar">Borrar última</button>
+    <button id="btnVaciar">Vaciar tabla</button>
+  </div>
+</section>
 
-    let playing = false;
-    let startTime = null;
-    let startValue = 0;
+<section class="datos">
+  <h2 style="margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--tinta2)">Lecturas capturadas</h2>
+  <table id="tabla">
+    <thead>
+      <tr><th>N.º</th><th>Tiempo (s)</th><th id="thA">Altura A (cm)</th><th id="thDA">Subió A (cm)</th>
+          <th id="thB">Altura B (cm)</th><th id="thDB">Subió B (cm)</th></tr>
+    </thead>
+    <tbody id="cuerpo"><tr><td colspan="6" class="vacio">Todavía no hay lecturas capturadas.</td></tr></tbody>
+  </table>
+  <div class="fila" style="margin-top:10px">
+    <button id="btnCsvDatos">Exportar lecturas (CSV)</button>
+    <button id="btnCsvLog">Exportar bitácora (CSV)</button>
+    <span class="aviso" id="contLog">Acciones registradas: 0</span>
+  </div>
+</section>
 
-    function hCyl(t){ return H * (t / T); }
-    function hCone(t){ return H * (1 - Math.pow(Math.max(0, 1 - t / T), 1/3)); }
+<p class="pie">Universidad de Antioquia · Doctorado en Educación · Proyecto <i>Razonamiento covariacional mediado por recursos digitales</i>.
+Este recurso no muestra expresiones algebraicas ni conclusiones: su función es la exploración y el registro.</p>
 
-    function el(name, attrs={}){
-      const node = document.createElementNS('http://www.w3.org/2000/svg', name);
-      Object.entries(attrs).forEach(([k,v]) => node.setAttribute(k, v));
-      return node;
+<script>
+(function () {
+  "use strict";
+
+  // ---------- modelo de los recipientes ----------
+  var H = 30, TT = 60;              // altura (cm) y tiempo total de llenado (s)
+  var RC = 5.64;                    // radio del cilindro (cm)
+  var RG = 7.387, RP = 3.693;       // radios mayor y menor del cono truncado (cm)
+  var TR = 3.39;                    // parámetro del recipiente desconocido (tonel)
+
+  function radio(tipo, y) {
+    if (tipo === "cil") return RC;
+    if (tipo === "cono") return RG + (RP - RG) * y / H;      // ancho abajo
+    if (tipo === "conoInv") return RP + (RG - RP) * y / H;   // ancho arriba
+    return TR + TR * Math.sin(Math.PI * y / H);              // tonel
+  }
+
+  function volumen(tipo, y) {       // integración de Simpson sobre [0, y]
+    var n = 400, s = 0, h = y / n, i, r;
+    if (y <= 0) return 0;
+    for (i = 0; i <= n; i++) {
+      r = radio(tipo, i * h);
+      s += (i === 0 || i === n ? 1 : (i % 2 ? 4 : 2)) * Math.PI * r * r;
     }
+    return s * h / 3;
+  }
 
-    function clearSvg(svg){ while(svg.firstChild) svg.removeChild(svg.firstChild); }
+  var capacidad = {};
+  ["cil", "cono", "conoInv", "tonel"].forEach(function (k) { capacidad[k] = volumen(k, H); });
 
-    function drawCylinder(level){
-      clearSvg(cylSvg);
-      const x=140, top=35, bottom=315, rx=78, ry=18;
-      const Hpx = bottom-top;
-      const yWater = bottom - (level/H)*Hpx;
+  function tiempoDe(tipo, y) { return TT * volumen(tipo, y) / capacidad[tipo]; }
 
-      cylSvg.appendChild(el('rect', {x:x-rx, y:top, width:2*rx, height:Hpx, fill:'#f8fafc', stroke:'none'}));
-
-      // water body
-      cylSvg.appendChild(el('rect', {x:x-rx, y:yWater, width:2*rx, height:bottom-yWater, fill:'var(--water)', stroke:'none'}));
-      cylSvg.appendChild(el('ellipse', {cx:x, cy:yWater, rx:rx, ry:ry, fill:'rgba(14,165,233,.18)', stroke:'var(--waterline)', 'stroke-width':2}));
-      cylSvg.appendChild(el('ellipse', {cx:x, cy:bottom, rx:rx, ry:ry, fill:'rgba(14,165,233,.18)', stroke:'var(--waterline)', 'stroke-width':2, 'stroke-dasharray':'6 6'}));
-
-      cylSvg.appendChild(el('line', {x1:x-rx, y1:top, x2:x-rx, y2:bottom, stroke:'#94a3b8', 'stroke-width':2}));
-      cylSvg.appendChild(el('line', {x1:x+rx, y1:top, x2:x+rx, y2:bottom, stroke:'#94a3b8', 'stroke-width':2}));
-      cylSvg.appendChild(el('ellipse', {cx:x, cy:top, rx:rx, ry:ry, fill:'none', stroke:'var(--waterline)', 'stroke-width':2}));
-      cylSvg.appendChild(el('ellipse', {cx:x, cy:bottom, rx:rx, ry:ry, fill:'none', stroke:'var(--waterline)', 'stroke-width':2, 'stroke-dasharray':'6 6'}));
-      cylSvg.appendChild(el('line', {x1:x, y1:bottom, x2:x, y2:top+10, stroke:'#111827', 'stroke-dasharray':'8 8', 'stroke-width':1.5}));
-
-      const txt = el('text', {x:20, y:26, fill:'#0f172a', 'font-size':16, 'font-weight':'700'});
-      txt.textContent = `h = ${level.toFixed(2)} cm`;
-      cylSvg.appendChild(txt);
+  function alturaEn(tipo, t) {      // inversión numérica por bisección
+    if (t <= 0) return 0;
+    if (t >= TT) return H;
+    var a = 0, b = H, m, i;
+    for (i = 0; i < 40; i++) {
+      m = (a + b) / 2;
+      if (tiempoDe(tipo, m) < t) a = m; else b = m;
     }
+    return (a + b) / 2;
+  }
 
-    function drawCone(level){
-      clearSvg(coneSvg);
-      const apexX=140, apexY=35, baseY=315, baseRx=95, baseRy=18;
-      const Hpx = baseY-apexY;
-      const yWater = baseY - (level/H)*Hpx;
-      const frac = (level/H);
-      const rxWater = baseRx*(1-frac);
+  var NOMBRES = { cil: "Cilindro", cono: "Cono", conoInv: "Cono invertido", tonel: "Recipiente desconocido" };
+  var ESCENAS = { AB: ["cil", "cono"], BC: ["cono", "conoInv"], D: ["tonel", null] };
 
-      // outer cone
-      cyl = el('path', {d:`M ${apexX} ${apexY} L ${apexX-baseRx} ${baseY} L ${apexX+baseRx} ${baseY} Z`, fill:'#f8fafc', stroke:'none'});
-      coneSvg.appendChild(cyl);
+  // ---------- estado ----------
+  var st = { escena: "AB", t: 0, paso: 10, verRecip: true, verGraf: false, ejes: false, reproduciendo: false, revelado: false };
+  var capturas = [], bitacora = [], animId = null, tPrev = 0;
 
-      // clipped water polygon
-      if(level > 0.001){
-        const leftWaterX = apexX - rxWater;
-        const rightWaterX = apexX + rxWater;
-        const poly = el('polygon', {
-          points:`${apexX-baseRx},${baseY} ${apexX+baseRx},${baseY} ${rightWaterX},${yWater} ${leftWaterX},${yWater}`,
-          fill:'rgba(14,165,233,.24)', stroke:'none'
-        });
-        coneSvg.appendChild(poly);
-        coneSvg.appendChild(el('ellipse', {cx:apexX, cy:yWater, rx:rxWater, ry:Math.max(5, 18*(1-frac*0.35)), fill:'rgba(14,165,233,.18)', stroke:'#f59e0b', 'stroke-width':2}));
-      }
-
-      coneSvg.appendChild(el('line', {x1:apexX, y1:baseY, x2:apexX, y2:apexY+6, stroke:'#111827', 'stroke-dasharray':'8 8', 'stroke-width':1.5}));
-      coneSvg.appendChild(el('line', {x1:apexX, y1:apexY, x2:apexX-baseRx, y2:baseY, stroke:'#94a3b8', 'stroke-width':2}));
-      coneSvg.appendChild(el('line', {x1:apexX, y1:apexY, x2:apexX+baseRx, y2:baseY, stroke:'#94a3b8', 'stroke-width':2}));
-      coneSvg.appendChild(el('ellipse', {cx:apexX, cy:baseY, rx:baseRx, ry:baseRy, fill:'none', stroke:'var(--waterline)', 'stroke-width':2, 'stroke-dasharray':'6 6'}));
-
-      const txt = el('text', {x:20, y:26, fill:'#0f172a', 'font-size':16, 'font-weight':'700'});
-      txt.textContent = `h = ${level.toFixed(2)} cm`;
-      coneSvg.appendChild(txt);
-    }
-
-    function drawGraph(svg, fn, titleColor){
-      clearSvg(svg);
-      const W=520, Hsvg=360;
-      const m={l:56,r:18,t:18,b:44};
-      const pw=W-m.l-m.r, ph=Hsvg-m.t-m.b;
-      const xMap = t => m.l + pw*(t/T);
-      const yMap = y => Hsvg-m.b - ph*(y/H);
-
-      // frame
-      svg.appendChild(el('rect', {x:0, y:0, width:W, height:Hsvg, fill:'#ffffff'}));
-
-      // grid
-      for(let i=0;i<=4;i++){
-        const x=xMap(i);
-        svg.appendChild(el('line', {x1:x, y1:m.t, x2:x, y2:Hsvg-m.b, stroke:'#e5e7eb', 'stroke-width':1}));
-      }
-      for(let j=0;j<=6;j++){
-        const y=yMap(j);
-        svg.appendChild(el('line', {x1:m.l, y1:y, x2:W-m.r, y2:y, stroke:'#e5e7eb', 'stroke-width':1}));
-      }
-
-      // axes
-      svg.appendChild(el('line', {x1:m.l, y1:Hsvg-m.b, x2:W-m.r+4, y2:Hsvg-m.b, stroke:'#374151', 'stroke-width':2}));
-      svg.appendChild(el('line', {x1:m.l, y1:Hsvg-m.b, x2:m.l, y2:m.t-4, stroke:'#374151', 'stroke-width':2}));
-
-      // arrowheads
-      svg.appendChild(el('path', {d:`M ${W-m.r+4} ${Hsvg-m.b} l -9 -4 l 0 8 z`, fill:'#374151'}));
-      svg.appendChild(el('path', {d:`M ${m.l} ${m.t-4} l -4 9 l 8 0 z`, fill:'#374151'}));
-
-      // labels
-      const xlab = el('text', {x:W/2, y:Hsvg-10, fill:'#0f172a', 'font-size':14, 'text-anchor':'middle'});
-      xlab.textContent = 'tiempo (s)';
-      svg.appendChild(xlab);
-      const ylab = el('text', {x:18, y:Hsvg/2, fill:'#0f172a', 'font-size':14, transform:`rotate(-90 18 ${Hsvg/2})`, 'text-anchor':'middle'});
-      ylab.textContent = 'altura (cm)';
-      svg.appendChild(ylab);
-
-      for(let i=0;i<=4;i++){
-        const x=xMap(i);
-        const tx = el('text', {x:x, y:Hsvg-m.b+22, fill:'#475569', 'font-size':13, 'text-anchor':'middle'});
-        tx.textContent = i.toString();
-        svg.appendChild(tx);
-      }
-      for(let j=0;j<=6;j++){
-        const y=yMap(j);
-        const ty = el('text', {x:m.l-12, y:y+4, fill:'#475569', 'font-size':13, 'text-anchor':'end'});
-        ty.textContent = j.toString();
-        svg.appendChild(ty);
-      }
-
-      // curve built dynamically up to the current time
-      const t = parseFloat(slider.value);
-      if(t > 0){
-        let d='';
-        const n=Math.max(2, Math.ceil(220*(t/T)));
-        for(let i=0;i<=n;i++){
-          const ti=t*i/n;
-          const y=fn(ti);
-          d += (i===0 ? 'M ' : ' L ') + xMap(ti) + ' ' + yMap(y);
-        }
-        svg.appendChild(el('path', {d, fill:'none', stroke: titleColor, 'stroke-width':4, 'stroke-linecap':'round'}));
-
-        // dynamic guides and point
-        const y = fn(t);
-        svg.appendChild(el('line', {x1:xMap(t), y1:yMap(0), x2:xMap(t), y2:yMap(y), stroke:'#94a3b8', 'stroke-dasharray':'6 5', 'stroke-width':1.5}));
-        svg.appendChild(el('line', {x1:xMap(0), y1:yMap(y), x2:xMap(t), y2:yMap(y), stroke:'#94a3b8', 'stroke-dasharray':'6 5', 'stroke-width':1.5}));
-        svg.appendChild(el('circle', {cx:xMap(t), cy:yMap(y), r:6, fill:titleColor, stroke:'#ffffff', 'stroke-width':2}));
-      }
-    }
-
-    function update(){
-      const t = parseFloat(slider.value);
-      const hc = hCyl(t);
-      const hk = hCone(t);
-      timeLabel.innerHTML = `<b>${t.toFixed(2)}</b> s`;
-      hcylStat.textContent = `${hc.toFixed(2)} cm`;
-      hconeStat.textContent = `${hk.toFixed(2)} cm`;
-      drawCylinder(hc);
-      drawCone(hk);
-      drawGraph(graphCyl, hCyl, '#1d4ed8');
-      drawGraph(graphCone, hCone, '#2563eb');
-    }
-
-    function animate(ts){
-      if(!playing) return;
-      if(startTime === null){
-        startTime = ts;
-        startValue = parseFloat(slider.value);
-      }
-      const elapsed = (ts - startTime)/1000;
-      let value = startValue + elapsed;
-      if(value >= T){
-        value = T;
-        playing = false;
-        playBtn.textContent = '▶ Reproducir';
-      }
-      slider.value = value.toFixed(2);
-      update();
-      if(playing) requestAnimationFrame(animate);
-      else { startTime = null; }
-    }
-
-    slider.addEventListener('input', () => {
-      if(playing){
-        playing = false;
-        playBtn.textContent = '▶ Reproducir';
-        startTime = null;
-      }
-      update();
+  // ---------- bitácora ----------
+  function log(evento, detalle) {
+    var par = ESCENAS[st.escena];
+    bitacora.push({
+      hora: new Date().toISOString(),
+      ms: Math.round(performance.now()),
+      evento: evento,
+      detalle: detalle === undefined ? "" : String(detalle),
+      escena: st.escena,
+      t: st.t.toFixed(1),
+      hA: par[0] ? alturaEn(par[0], st.t).toFixed(2) : "",
+      hB: par[1] ? alturaEn(par[1], st.t).toFixed(2) : ""
     });
+    var c = document.getElementById("contLog");
+    if (c) c.textContent = "Acciones registradas: " + bitacora.length;
+  }
 
-    playBtn.addEventListener('click', () => {
-      playing = !playing;
-      playBtn.textContent = playing ? '⏸ Pausar' : '▶ Reproducir';
-      startTime = null;
-      if(playing) requestAnimationFrame(animate);
+  // ---------- dibujo de los recipientes ----------
+  var esc = document.getElementById("escena"), cx = esc.getContext("2d");
+  var pla = document.getElementById("planos"), cg = pla.getContext("2d");
+
+  function dibujarRecipiente(tipo, x0, y0, ancho, alto, nivel, color) {
+    var esc1 = alto / H, cxm = x0 + ancho / 2, i, y, r, px;
+    var rmax = Math.max(radio(tipo, 0), radio(tipo, H / 2), radio(tipo, H));
+    var escX = (ancho / 2 - 6) / rmax;
+
+    // agua
+    cx.save();
+    cx.beginPath();
+    cx.moveTo(cxm - radio(tipo, 0) * escX, y0 + alto);
+    for (i = 0; i <= 60; i++) { y = nivel * i / 60; cx.lineTo(cxm - radio(tipo, y) * escX, y0 + alto - y * esc1); }
+    for (i = 60; i >= 0; i--) { y = nivel * i / 60; cx.lineTo(cxm + radio(tipo, y) * escX, y0 + alto - y * esc1); }
+    cx.closePath();
+    cx.fillStyle = color;
+    cx.globalAlpha = 0.75;
+    cx.fill();
+    cx.restore();
+
+    // contorno
+    cx.beginPath();
+    for (i = 0; i <= 80; i++) { y = H * i / 80; px = cxm - radio(tipo, y) * escX; if (i === 0) cx.moveTo(px, y0 + alto); else cx.lineTo(px, y0 + alto - y * esc1); }
+    cx.strokeStyle = "#33454e"; cx.lineWidth = 2; cx.stroke();
+    cx.beginPath();
+    for (i = 0; i <= 80; i++) { y = H * i / 80; px = cxm + radio(tipo, y) * escX; if (i === 0) cx.moveTo(px, y0 + alto); else cx.lineTo(px, y0 + alto - y * esc1); }
+    cx.stroke();
+    cx.beginPath();
+    cx.moveTo(cxm - radio(tipo, 0) * escX, y0 + alto);
+    cx.lineTo(cxm + radio(tipo, 0) * escX, y0 + alto);
+    cx.stroke();
+
+    // regla lateral
+    cx.strokeStyle = "#aab4ba"; cx.lineWidth = 1; cx.fillStyle = "#5a686f"; cx.font = "11px sans-serif"; cx.textAlign = "right";
+    for (i = 0; i <= 6; i++) {
+      y = i * 5;
+      cx.beginPath(); cx.moveTo(x0 + 4, y0 + alto - y * esc1); cx.lineTo(x0 + 12, y0 + alto - y * esc1); cx.stroke();
+      cx.fillText(y + "", x0 + 2, y0 + alto - y * esc1 + 4);
+    }
+    cx.textAlign = "center"; cx.fillStyle = "#1c2529"; cx.font = "600 13px sans-serif";
+    cx.fillText(NOMBRES[tipo], cxm, y0 + alto + 22);
+  }
+
+  function pintarEscena() {
+    var par = ESCENAS[st.escena], oculto;
+    cx.clearRect(0, 0, esc.width, esc.height);
+    oculto = (st.escena === "D" && !st.revelado) || !st.verRecip;
+    if (oculto) {
+      cx.fillStyle = "#f0f3f5"; cx.fillRect(30, 40, esc.width - 60, esc.height - 100);
+      cx.fillStyle = "#5a686f"; cx.font = "15px sans-serif"; cx.textAlign = "center";
+      cx.fillText(st.escena === "D" ? "El recipiente no se muestra." : "Recipientes ocultos.",
+                  esc.width / 2, esc.height / 2 - 8);
+      cx.fillText(st.escena === "D" ? "Observa únicamente la gráfica." : "", esc.width / 2, esc.height / 2 + 16);
+      return;
+    }
+    if (par[1]) {
+      dibujarRecipiente(par[0], 40, 30, 280, 380, alturaEn(par[0], st.t), "#2e86c1");
+      dibujarRecipiente(par[1], 370, 30, 280, 380, alturaEn(par[1], st.t), "#117864");
+    } else {
+      dibujarRecipiente(par[0], 210, 30, 280, 380, alturaEn(par[0], st.t), "#2e86c1");
+    }
+  }
+
+  // ---------- dibujo de las gráficas ----------
+  function plano(x0, y0, an, al, tipo, color, titulo) {
+    var i, t, y, px, py, paso;
+    cg.fillStyle = "#ffffff"; cg.fillRect(x0, y0, an, al);
+    cg.strokeStyle = "#dde2e6"; cg.lineWidth = 1;
+    for (i = 0; i <= 12; i++) { px = x0 + an * i / 12; cg.beginPath(); cg.moveTo(px, y0); cg.lineTo(px, y0 + al); cg.stroke(); }
+    for (i = 0; i <= 12; i++) { py = y0 + al * i / 12; cg.beginPath(); cg.moveTo(x0, py); cg.lineTo(x0 + an, py); cg.stroke(); }
+    cg.strokeStyle = "#33454e"; cg.lineWidth = 1.5;
+    cg.beginPath(); cg.moveTo(x0, y0 + al); cg.lineTo(x0 + an, y0 + al); cg.lineTo(x0 + an, y0); cg.stroke();
+    cg.beginPath(); cg.moveTo(x0, y0); cg.lineTo(x0, y0 + al); cg.stroke();
+
+    cg.fillStyle = "#5a686f"; cg.font = "11px sans-serif"; cg.textAlign = "center";
+    cg.fillText(st.ejes ? "altura del agua (cm)" : "tiempo (s)", x0 + an / 2, y0 + al + 26);
+    cg.save(); cg.translate(x0 - 26, y0 + al / 2); cg.rotate(-Math.PI / 2);
+    cg.fillText(st.ejes ? "tiempo (s)" : "altura del agua (cm)", 0, 0); cg.restore();
+    for (i = 0; i <= 6; i++) {
+      cg.textAlign = "center";
+      cg.fillText(String(Math.round((st.ejes ? H : TT) * i / 6)), x0 + an * i / 6, y0 + al + 13);
+      cg.textAlign = "right";
+      cg.fillText(String(Math.round((st.ejes ? TT : H) * i / 6)), x0 - 5, y0 + al - al * i / 6 + 4);
+    }
+    cg.fillStyle = "#1c2529"; cg.font = "600 12px sans-serif"; cg.textAlign = "left";
+    cg.fillText(titulo, x0, y0 - 8);
+
+    if (!st.verGraf) {
+      cg.fillStyle = "rgba(240,243,245,0.94)"; cg.fillRect(x0, y0, an, al);
+      cg.fillStyle = "#8b989f"; cg.font = "13px sans-serif"; cg.textAlign = "center";
+      cg.fillText("gráfica oculta", x0 + an / 2, y0 + al / 2);
+      return;
+    }
+    cg.strokeStyle = color; cg.lineWidth = 2.5; cg.beginPath();
+    paso = 200;
+    for (i = 0; i <= paso; i++) {
+      t = st.t * i / paso; y = alturaEn(tipo, t);
+      px = st.ejes ? x0 + an * y / H : x0 + an * t / TT;
+      py = st.ejes ? y0 + al - al * t / TT : y0 + al - al * y / H;
+      if (i === 0) cg.moveTo(px, py); else cg.lineTo(px, py);
+    }
+    cg.stroke();
+    y = alturaEn(tipo, st.t);
+    px = st.ejes ? x0 + an * y / H : x0 + an * st.t / TT;
+    py = st.ejes ? y0 + al - al * st.t / TT : y0 + al - al * y / H;
+    cg.fillStyle = color; cg.beginPath(); cg.arc(px, py, 4.5, 0, 2 * Math.PI); cg.fill();
+
+    capturas.forEach(function (c) {
+      var yy = c[tipo === ESCENAS[st.escena][0] ? "hA" : "hB"];
+      if (yy === null || yy === undefined) return;
+      var qx = st.ejes ? x0 + an * yy / H : x0 + an * c.t / TT;
+      var qy = st.ejes ? y0 + al - al * c.t / TT : y0 + al - al * yy / H;
+      cg.strokeStyle = "#33454e"; cg.lineWidth = 1;
+      cg.beginPath(); cg.moveTo(qx - 4, qy); cg.lineTo(qx + 4, qy); cg.moveTo(qx, qy - 4); cg.lineTo(qx, qy + 4); cg.stroke();
     });
+  }
 
-    resetBtn.addEventListener('click', () => {
-      playing = false;
-      playBtn.textContent = '▶ Reproducir';
-      startTime = null;
-      slider.value = 0;
-      update();
+  function pintarGraficas() {
+    var par = ESCENAS[st.escena];
+    cg.clearRect(0, 0, pla.width, pla.height);
+    if (par[1]) {
+      plano(60, 30, 580, 170, par[0], "#2e86c1", NOMBRES[par[0]]);
+      plano(60, 270, 580, 170, par[1], "#117864", NOMBRES[par[1]]);
+    } else {
+      plano(60, 90, 580, 300, par[0], "#1a5276", "Recipiente desconocido");
+    }
+  }
+
+  // ---------- tabla ----------
+  function pintarTabla() {
+    var cuerpo = document.getElementById("cuerpo"), par = ESCENAS[st.escena], html = "";
+    document.getElementById("thA").textContent = "Altura " + (par[0] ? NOMBRES[par[0]] : "A") + " (cm)";
+    document.getElementById("thDA").textContent = "Subió " + (par[0] ? NOMBRES[par[0]] : "A") + " (cm)";
+    document.getElementById("thB").textContent = "Altura " + (par[1] ? NOMBRES[par[1]] : "B") + " (cm)";
+    document.getElementById("thDB").textContent = "Subió " + (par[1] ? NOMBRES[par[1]] : "B") + " (cm)";
+    if (!capturas.length) {
+      cuerpo.innerHTML = '<tr><td colspan="6" class="vacio">Todavía no hay lecturas capturadas.</td></tr>';
+      return;
+    }
+    capturas.forEach(function (c, i) {
+      var a = capturas[i - 1];
+      function dif(k) { return (i === 0 || c[k] === null || !a || a[k] === null) ? "—" : (c[k] - a[k]).toFixed(2).replace(".", ","); }
+      function val(k) { return c[k] === null ? "—" : c[k].toFixed(2).replace(".", ","); }
+      html += "<tr><td>" + (i + 1) + "</td><td>" + c.t.toFixed(0) + "</td><td>" + val("hA") + "</td><td>" + dif("hA") +
+              "</td><td>" + val("hB") + "</td><td>" + dif("hB") + "</td></tr>";
     });
+    cuerpo.innerHTML = html;
+  }
 
-    update();
-  </script>
+  // ---------- lecturas ----------
+  function pintarLecturas() {
+    var par = ESCENAS[st.escena];
+    document.getElementById("lecT").textContent = st.t.toFixed(1).replace(".", ",") + " s";
+    document.getElementById("rotA").textContent = NOMBRES[par[0]];
+    document.getElementById("lecA").textContent = alturaEn(par[0], st.t).toFixed(2).replace(".", ",") + " cm";
+    if (par[1]) {
+      document.getElementById("rotB").textContent = NOMBRES[par[1]];
+      document.getElementById("lecB").textContent = alturaEn(par[1], st.t).toFixed(2).replace(".", ",") + " cm";
+    } else {
+      document.getElementById("rotB").textContent = "—";
+      document.getElementById("lecB").textContent = "—";
+    }
+  }
+
+  function pintar() { pintarEscena(); pintarGraficas(); pintarLecturas(); }
+
+  // ---------- controles ----------
+  var rango = document.getElementById("tiempo");
+
+  function fijarT(v, origen) {
+    st.t = Math.max(0, Math.min(TT, v));
+    rango.value = String(st.t);
+    pintar();
+    if (origen) log("tiempo", origen + " → t=" + st.t.toFixed(1));
+  }
+
+  rango.addEventListener("input", function () { st.t = parseFloat(rango.value); pintar(); });
+  rango.addEventListener("pointerdown", function () { tPrev = st.t; log("arrastre_inicio", "t=" + st.t.toFixed(1)); });
+  rango.addEventListener("change", function () {
+    log("arrastre_fin", "de t=" + tPrev.toFixed(1) + " a t=" + st.t.toFixed(1) +
+        (st.t > tPrev ? " (avanza)" : st.t < tPrev ? " (retrocede)" : " (sin cambio)"));
+  });
+
+  document.getElementById("btnMas").addEventListener("click", function () { fijarT(st.t + st.paso, "paso adelante"); });
+  document.getElementById("btnMenos").addEventListener("click", function () { fijarT(st.t - st.paso, "paso atrás"); });
+  document.getElementById("btnReset").addEventListener("click", function () { fijarT(0, "reinicio"); });
+
+  document.getElementById("paso").addEventListener("change", function () {
+    st.paso = parseFloat(this.value);
+    rango.step = String(st.paso);
+    fijarT(Math.round(st.t / st.paso) * st.paso, null);
+    log("cambio_paso", "paso=" + st.paso + " s");
+  });
+
+  document.getElementById("btnPlay").addEventListener("click", function () {
+    var b = this;
+    if (st.reproduciendo) {
+      cancelAnimationFrame(animId); st.reproduciendo = false; b.textContent = "Reproducir"; rango.step = String(st.paso); log("pausa", "t=" + st.t.toFixed(1));
+      return;
+    }
+    st.reproduciendo = true; b.textContent = "Pausar"; rango.step = "any"; log("reproducir", "desde t=" + st.t.toFixed(1));
+    var t0 = performance.now(), base = st.t >= TT ? 0 : st.t;
+    (function paso1(ahora) {
+      if (!st.reproduciendo) return;
+      st.t = Math.min(TT, base + (ahora - t0) / 1000 * 6);
+      rango.value = String(st.t); pintar();
+      if (st.t >= TT) { st.reproduciendo = false; b.textContent = "Reproducir"; rango.step = String(st.paso); log("fin_reproduccion", "t=60"); return; }
+      animId = requestAnimationFrame(paso1);
+    })(performance.now());
+  });
+
+  function conmutar(id, prop, textoOn, textoOff, evento) {
+    var b = document.getElementById(id);
+    b.addEventListener("click", function () {
+      st[prop] = !st[prop];
+      b.setAttribute("aria-pressed", st[prop] ? "true" : "false");
+      b.textContent = st[prop] ? textoOn : textoOff;
+      if (prop === "verGraf") {
+        document.getElementById("avisoGraf").textContent = st.verGraf
+          ? "Gráficas visibles. Cada marca corresponde a una lectura capturada."
+          : "Las gráficas están ocultas. Se activan cuando el profesor lo indique.";
+      }
+      pintar();
+      log(evento, st[prop] ? "activado" : "desactivado");
+    });
+  }
+  conmutar("btnGraf", "verGraf", "Ocultar gráficas", "Mostrar gráficas", "ver_graficas");
+  conmutar("btnEjes", "ejes", "Ejes normales", "Intercambiar ejes", "intercambio_ejes");
+
+  document.getElementById("escenario").addEventListener("change", function () {
+    st.escena = this.value; st.revelado = false;
+    var d = document.getElementById("btnRecip");
+    d.textContent = st.escena === "D" ? "Revelar recipiente" : (st.verRecip ? "Ocultar recipientes" : "Mostrar recipientes");
+    d.setAttribute("aria-pressed", st.escena === "D" ? "false" : (st.verRecip ? "true" : "false"));
+    pintar(); pintarTabla();
+    log("cambio_escenario", st.escena);
+  });
+
+  var btnRecip = document.getElementById("btnRecip");
+  btnRecip.addEventListener("click", function () {
+    if (st.escena === "D") {
+      st.revelado = !st.revelado;
+      btnRecip.textContent = st.revelado ? "Ocultar recipiente" : "Revelar recipiente";
+      btnRecip.setAttribute("aria-pressed", st.revelado ? "true" : "false");
+      log("revelar_recipiente", st.revelado ? "sí" : "no");
+    } else {
+      st.verRecip = !st.verRecip;
+      btnRecip.textContent = st.verRecip ? "Ocultar recipientes" : "Mostrar recipientes";
+      btnRecip.setAttribute("aria-pressed", st.verRecip ? "true" : "false");
+      log("ver_recipientes", st.verRecip ? "activado" : "desactivado");
+    }
+    pintar();
+  });
+
+  document.getElementById("btnCapturar").addEventListener("click", function () {
+    var par = ESCENAS[st.escena];
+    capturas.push({ t: st.t, hA: alturaEn(par[0], st.t), hB: par[1] ? alturaEn(par[1], st.t) : null });
+    pintarTabla(); pintarGraficas();
+    log("captura", "t=" + st.t.toFixed(1) + " · n=" + capturas.length);
+  });
+  document.getElementById("btnBorrar").addEventListener("click", function () {
+    if (capturas.length) { capturas.pop(); pintarTabla(); pintarGraficas(); log("borrar_captura", "n=" + capturas.length); }
+  });
+  document.getElementById("btnVaciar").addEventListener("click", function () {
+    capturas = []; pintarTabla(); pintarGraficas(); log("vaciar_tabla", "");
+  });
+
+  // ---------- exportación ----------
+  function descargar(nombre, texto) {
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(["\ufeff" + texto], { type: "text/csv;charset=utf-8" }));
+    a.download = nombre;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+  function etiqueta() {
+    var p = document.getElementById("idPart").value || "sin-codigo";
+    var e = document.getElementById("idEquipo").value || "sin-equipo";
+    return p.replace(/\s+/g, "") + "_eq" + e.replace(/\s+/g, "");
+  }
+  document.getElementById("btnCsvDatos").addEventListener("click", function () {
+    var par = ESCENAS[st.escena];
+    var t = "participante;equipo;escenario;n;tiempo_s;altura_" + par[0] + "_cm;altura_" + (par[1] || "B") + "_cm\n";
+    capturas.forEach(function (c, i) {
+      t += document.getElementById("idPart").value + ";" + document.getElementById("idEquipo").value + ";" +
+           st.escena + ";" + (i + 1) + ";" + c.t.toFixed(1) + ";" + c.hA.toFixed(2) + ";" +
+           (c.hB === null ? "" : c.hB.toFixed(2)) + "\n";
+    });
+    descargar("T1_lecturas_" + etiqueta() + ".csv", t);
+    log("exportar_lecturas", "n=" + capturas.length);
+  });
+  document.getElementById("btnCsvLog").addEventListener("click", function () {
+    var t = "participante;equipo;hora;ms;evento;detalle;escenario;t_s;altura_A_cm;altura_B_cm\n";
+    bitacora.forEach(function (b) {
+      t += document.getElementById("idPart").value + ";" + document.getElementById("idEquipo").value + ";" +
+           b.hora + ";" + b.ms + ";" + b.evento + ";" + b.detalle + ";" + b.escena + ";" + b.t + ";" + b.hA + ";" + b.hB + "\n";
+    });
+    descargar("T1_bitacora_" + etiqueta() + ".csv", t);
+  });
+
+  // ---------- arranque ----------
+  log("apertura", "sesión iniciada");
+  pintar(); pintarTabla();
+})();
+</script>
 </body>
 </html>
